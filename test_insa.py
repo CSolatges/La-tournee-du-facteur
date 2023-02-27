@@ -15,8 +15,15 @@ GINSAdist= np.array([[np.inf,1,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf]
 "Module Dijkstra"
 
 #Test de la fonction dijkstreDist
-print(D.dijkstraDist(GINSAdist, 0)) 
+#print(D.dijkstraDist(GINSAdist, 0)) 
 # affiche une liste de liste avec [[distance minimal, sommet visité, sommet précédent]]
-
+print("plus court chemin, Dijkstra")
 #Test de la fonction dijkstraPCC
-print(D.dijkstraPCC(GINSAdist,0,8))
+#print(D.dijkstraPCC(GINSAdist,0,8))
+
+"Module Euler"
+print("cycle eulerien dans GINSA")
+#print(E.cycleulerien(GINSA,1))
+
+"Module Hierholzer"
+print(H.hierholzer(GINSA))
