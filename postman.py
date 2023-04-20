@@ -8,15 +8,7 @@ graph4 = [[0,0,1,0],
           [1,1,0,1],
           [0,1,1,0]]
 
-graphinsa =     [[0,1,0,0,0,0,0,0,0],
-                [1,0,1,0,0,0,0,1,0],
-                [0,1,0,1,0,0,1,0,0],
-                [0,0,1,0,1,1,0,0,0],
-                [0,0,0,1,0,0,0,0,0],
-                [0,0,0,1,0,0,1,0,0],
-                [0,0,1,0,0,1,0,1,1],
-                [0,1,0,0,0,0,1,0,1],
-                [0,0,0,0,0,0,1,1,0]]
+
 
 
 graph5 = [[0,1,0,0,0],
@@ -54,7 +46,18 @@ graph2 =                [[0, 3, 1, 0, 5, 0],
                     ]; 
 
 
-G = nx.from_numpy_array(np.array(graphinsa))
+graphinsa =     [[0,1,0,0,0,0,0,0,0],
+                [1,0,1,0,0,0,0,1,0],
+                [0,1,0,1,0,0,1,0,0],
+                [0,0,1,0,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0],
+                [0,0,0,1,0,0,1,0,0],
+                [0,0,1,0,0,1,0,1,1],
+                [0,1,0,0,0,0,1,0,1],
+                [0,0,0,0,0,0,1,1,0]]
+
+
+G = nx.from_numpy_array(np.array(graph3))
 nx.draw(G, with_labels=True)
 plt.show() #permet d'afficher le graphe
 
@@ -187,4 +190,4 @@ def Chinese_Postman(graph):
     return chinese_dis    
     
     
-print('Chinese Postman Distance is:',Chinese_Postman(graphinsa))
+print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph3))
