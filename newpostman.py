@@ -119,6 +119,7 @@ def Chinese_Postman(graph):
     odds = get_odd(graph)
     if len(odds) == 0:
         return sum_edges(graph), [] # retourne une liste vide pour le chemin si le graphe est déjà eulérien
+    #en gros ça me retourne bien le bon poids quand le graphe est eulerien mais du coup pas le chemin
     pairs = gen_pairs(odds)
     l = (len(pairs)+1)//2 
     pairings_sum = []

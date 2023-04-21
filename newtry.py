@@ -3,6 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+graph6 = [
+[0, 1, 1, 0, 0],
+ [1, 0, 1, 1, 0],
+ [1, 1, 0, 1, 1],
+ [0, 1, 1, 0, 1],
+ [0, 0, 1, 1, 0]]
+
+
+
 graph4 = [[0,0,1,0],
           [0,0,1,1],
           [1,1,0,1],
@@ -59,7 +68,7 @@ graphinsa =     [[0,1,0,0,0,0,0,0,0],
 
 G = nx.from_numpy_array(np.array(graph3))
 nx.draw(G, with_labels=True)
-#plt.show() #permet d'afficher le graphe
+plt.show() #permet d'afficher le graphe
 
 
 def sum_edges(graph):
@@ -189,6 +198,80 @@ def Chinese_Postman(graph):
     chinese_dis = added_dis + sum_edges(graph)
     return chinese_dis    
 
+def fleury(graph):
+    # Copie de graph pour éviter de le modifier
+    graph_copy = [row[:] for row in graph]
+    
+    # On récupère le premier sommet
+    current_vertex = 0
+    # On initialise le chemin
+    path = [current_vertex]
+    while sum_edges(graph_copy) != 0:
+        # On recherche une arête qui n'est pas une arête de pont
+        bridges = find_bridges(graph_copy)
+        non_bridges = [(i,j) for i in range(len(graph_copy)) for j in range(len(graph_copy)) if graph_copy[i][j]!=0 and (i,j) not in bridges]
+        if len(non_bridges) == 0:
+            break
+        next_vertex = None
+        for edge in non_bridges:
+            if edge[0] == current_vertex or edge[1] == current_vertex:
+                next_vertex = edge[0] + edge[1] - current_vertex
+                graph_copy[edge[0]][edge[1]] = 0
+                graph_copy[edge[1]][edge[0]] = 0
+                break
+        if next_vertex is None:
+            # Cas où tous les voisins sont des ponts
+            next_vertex = path[-2]
+            graph_copy[current_vertex][next_vertex] = 0
+            graph_copy[next_vertex][current_vertex] = 0
+            path = path[:-1]
+        else:
+            path.append(next_vertex)
+        current_vertex = next_vertex
+    
+    return path
+
+
+
+def find_bridges(graph):
+    bridges = []
+    visited = set()
+    parent = [-1] * len(graph)
+    low = [float('inf')] * len(graph)
+    disc = [float('inf')] * len(graph)
+    
+    def dfs(v):
+        visited.add(v)
+        disc[v] = dfs.time
+        low[v] = dfs.time
+        dfs.time += 1
+        
+        for i in range(len(graph)):
+            if graph[v][i] != 0:
+                if i not in visited:
+                    parent[i] = v
+                    dfs(i)
+                    low[v] = min(low[v], low[i])
+                    if low[i] > disc[v]:
+                        bridges.append((v, i))
+                elif i != parent[v]:
+                    low[v] = min(low[v], disc[i])
+                    
+    dfs.time = 0
+    
+    for i in range(len(graph)):
+        if i not in visited:
+            dfs(i)
+            
+    return bridges
+
+if nx.is_eulerian(G):
+    eulerian_path = fleury(nx.to_numpy_array(G))
+    print('Chemin eulérien :', eulerian_path)
+else:
+    print('Le graphe n\'est pas eulérien')
+
+
 
     
-print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph))
+print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph3))
