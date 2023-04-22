@@ -1,9 +1,10 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+from collections import defaultdict
 
-
-graph6 = [
+"""
+graph = [
 [0, 1, 1, 0, 0],
  [1, 0, 1, 1, 0],
  [1, 1, 0, 1, 1],
@@ -12,7 +13,7 @@ graph6 = [
 
 
 
-graph4 = [[0,0,1,0],
+graph = [[0,0,1,0],
           [0,0,1,1],
           [1,1,0,1],
           [0,1,1,0]]
@@ -20,7 +21,7 @@ graph4 = [[0,0,1,0],
 
 
 
-graph5 = [[0,1,0,0,0],
+graph = [[0,1,0,0,0],  #graphe non eulerien mais qu'on peut transformer en eulérien
           [1,0,0,0,1],
           [0,0,0,1,1],
           [0,0,1,0,1],
@@ -28,15 +29,17 @@ graph5 = [[0,1,0,0,0],
 
 
 
-graph3 = [[0,1,1,1,1],
-          [1,0,1,0,0],
+graph = [[0,1,1,1,1],
+          [1,0,1,0,0],   #graĥe eulérien
           [1,1,0,0,0],
           [1,0,0,0,1],
           [1,0,0,1,0]]
 
+
+
 graph =                 [[0, 4, 0, 0, 0, 0, 0, 8, 0], 
                        [4, 0, 8, 0, 0, 0, 0, 11, 0], 
-                        [0, 8, 0, 7, 0, 4, 0, 0, 2], 
+                        [0, 8, 0, 7, 0, 4, 0, 0, 2],   #graphe non eulerien mais qu'on peut transformer en eulérien
                         [0, 0, 7, 0, 9, 14, 0, 0, 0], 
                         [0, 0, 0, 9, 0, 10, 0, 0, 0], 
                         [0, 0, 4, 0, 10, 0, 2, 0, 0], 
@@ -45,17 +48,20 @@ graph =                 [[0, 4, 0, 0, 0, 0, 0, 8, 0],
                         [0, 0, 2, 0, 0, 0, 6, 7, 0] 
                     ]; 
 
-graph2 =                [[0, 3, 1, 0, 5, 0], 
+
+graph =                [[0, 3, 1, 0, 5, 0], 
                         [3, 0, 0, 1, 0, 6], 
-                        [1, 0, 0, 0, 2, 0], 
+                        [1, 0, 0, 0, 2, 0],  #graphe non eulerien mais qu'on peut transformer en eulérien
                         [0, 1, 0, 0, 0, 1], 
                         [5, 0, 2, 0, 0, 4], 
                         [0, 6, 0, 1, 4, 0], 
                          
                     ]; 
 
+"""
 
-graphinsa =     [[0,1,0,0,0,0,0,0,0],
+
+graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eulérien
                 [1,0,1,0,0,0,0,1,0],
                 [0,1,0,1,0,0,1,0,0],
                 [0,0,1,0,1,1,0,0,0],
@@ -65,8 +71,9 @@ graphinsa =     [[0,1,0,0,0,0,0,0,0],
                 [0,1,0,0,0,0,1,0,1],
                 [0,0,0,0,0,0,1,1,0]]
 
+            
 
-G = nx.from_numpy_array(np.array(graph3))
+G = nx.from_numpy_array(np.array(graph))
 nx.draw(G, with_labels=True)
 plt.show() #permet d'afficher le graphe
 
@@ -265,13 +272,55 @@ def find_bridges(graph):
             
     return bridges
 
+
+def make_eulerian(adj_matrix):
+
+    G = nx.from_numpy_array(np.array(adj_matrix))
+
+    # vérifier si le graph est eulerien
+    if nx.is_eulerian(G):
+        return G
+
+    # trouver les noeuds avec degrés impairs
+    odd_nodes = [node for node, degree in G.degree() if degree % 2 == 1]
+
+    # trouver toutes les paires de noeuds avec degrés impairs
+    pairs = []
+    while odd_nodes:
+        node = odd_nodes.pop()
+        for other_node in odd_nodes:
+            pairs.append((node, other_node))
+
+    # calculer les plus courtes distances entre chaque paire de noeuds avec degrés impairs
+    shortest_paths = {}
+    for start, end in pairs:
+        shortest_paths[(start, end)] = nx.shortest_path_length(G, start, end)
+
+    # ajouter des arêtes pour connecter les paires de noeuds avec degrés impairs
+    # en utilisant les plus courtes distances trouvées précédemment
+    for start, end in pairs:
+        length = shortest_paths[(start, end)]
+        G.add_edge(start, end, weight=length)
+
+    # vérifier si le graphe est maintenant eulerien
+    if not nx.is_eulerian(G):
+        print("Erreur dans la création du graphe eulérien")
+
+    return G
+
+
+
+
 if nx.is_eulerian(G):
     eulerian_path = fleury(nx.to_numpy_array(G))
     print('Chemin eulérien :', eulerian_path)
 else:
-    print('Le graphe n\'est pas eulérien')
+    G = make_eulerian(graph)
+    non_eulerian_path = fleury(nx.to_numpy_array(G))
+    print('Chemin non eulérien :', non_eulerian_path)
+   
 
 
 
     
-print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph3))
+print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph))
