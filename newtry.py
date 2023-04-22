@@ -80,74 +80,73 @@ plt.show() #permet d'afficher le graphe
 
 def sum_edges(graph):
     w_sum = 0
-    l = len(graph)
+    l = len(graph) # On récupère la taille de la matrice carrée
     for i in range(l):
-        for j in range(i,l):
-            w_sum += graph[i][j]
+        for j in range(i,l): # On boucle sur toutes les paires d'arêtes dans la matrice carrée
+            w_sum += graph[i][j] # On ajoute le poids de chaque arête à la somme
     return w_sum
+
             
 
 def dijktra(graph, source, dest):
-    shortest = [0 for i in range(len(graph))]
-    selected = [source]
-    l = len(graph)
-    #Base case from source
+    shortest = [0 for i in range(len(graph))]   # initialisation des poids des sommets à 0
+    selected = [source]   # initialisation de la liste des sommets sélectionnés, avec le sommet de départ
+    l = len(graph)   # longueur de la matrice graph
     inf = 10000000
-    min_sel = inf
+    min_sel = inf   # initialisation de la variable min_sel à une valeur grande (ici 10 millions)
     for i in range(l):
         if(i==source):
-            shortest[source] = 0 #graph[source][source]
+            shortest[source] = 0  # le poids du sommet de départ est initialisé à 0
         else:
             if(graph[source][i]==0):
-                shortest[i] = inf
+                shortest[i] = inf   # si il n'y a pas d'arête entre le sommet de départ et le sommet courant, le poids du sommet courant est initialisé à une valeur grande (ici 10 millions)
             else:
-                shortest[i] = graph[source][i]
+                shortest[i] = graph[source][i]   # sinon, le poids du sommet courant est initialisé à la valeur de l'arête qui les relie
                 if(shortest[i] < min_sel):
-                    min_sel = shortest[i]
-                    ind = i
+                    min_sel = shortest[i]   # on met à jour la valeur de min_sel si un poids plus petit est trouvé
+                    ind = i   # on stocke l'indice du sommet courant dans la variable ind
                 
     if(source==dest):
-        return 0
-    # Dijktra's in Play
-    selected.append(ind) 
+        return 0   # si le sommet de départ et le sommet d'arrivée sont les mêmes, la distance est de 0
+
+    selected.append(ind)   # on ajoute le sommet courant dans la liste des sommets sélectionnés
     while(ind!=dest):
-        #print('ind',ind)
         for i in range(l):
-            if i not in selected:
-                if(graph[ind][i]!=0):
-                    #Check if distance needs to be updated
-                    if((graph[ind][i] + min_sel) < shortest[i]):
-                        shortest[i] = graph[ind][i] + min_sel
-        temp_min = 1000000
-        #print('shortest:',shortest)
-        #print('selected:',selected)
-        
+            if i not in selected:   # si le sommet n'a pas été déjà sélectionné
+                if(graph[ind][i]!=0):   # si il y a une arête entre le sommet courant et le sommet i
+                    #on regarde si la distance a besoin d'être mise à jour
+                    if((graph[ind][i] + min_sel) < shortest[i]):   # on vérifie si la distance doit être mise à jour
+                        shortest[i] = graph[ind][i] + min_sel   # si c'est le cas, on met à jour le poids du sommet i
+        temp_min = 1000000   # on initialise temp_min à une valeur grande (ici 1 million)
         for j in range(l):
-            if j not in selected:
-                if(shortest[j] < temp_min):
-                    temp_min = shortest[j]
-                    ind = j
-        min_sel = temp_min
-        selected.append(ind)
+            if j not in selected:   # si le sommet n'a pas été déjà sélectionné
+                if(shortest[j] < temp_min):   # si le poids du sommet j est plus petit que temp_min
+                    temp_min = shortest[j]   # on met à jour temp_min
+                    ind = j   # on met à jour l'indice du sommet courant
+        min_sel = temp_min   # on met à jour min_sel avec la valeur de temp_min
+        selected.append(ind)   # on ajoute le sommet courant dans la liste des sommets sélectionnés
     
-    return shortest[dest]
-                            
-#Finding odd degree vertices in graph
+    return shortest[dest]   # on retourne le poids du sommet d'arrivée
+
+
 
 def get_odd(graph):
-    degrees = [0 for i in range(len(graph))]
+    degrees = [0 for i in range(len(graph))]  # Création d'une liste de degrés pour chaque sommet, initialisée à 0
     for i in range(len(graph)):
         for j in range(len(graph)):
                 if(graph[i][j]!=0):
-                    degrees[i]+=1
-                
-    #print(degrees)
-    odds = [i for i in range(len(degrees)) if degrees[i]%2!=0]
-    #print('odds are:',odds)
-    return odds
+                    degrees[i]+=1   # Pour chaque sommet, parcours de tous les voisins pour calculer son degré
 
-#Function to generate unique pairs
+    odds = [i for i in range(len(degrees)) if degrees[i]%2!=0]  # Récupération des sommets de degré impair
+    return odds  # Retourne la liste des sommets de degré impair
+
+
+
 def gen_pairs(odds):
+    """
+    Cette fonction prend en entrée une liste d'entiers impairs (odds) représentant les sommets de degré impair d'un graphe.
+    Elle renvoie une liste de toutes les paires de sommets possibles.
+    """
     pairs = []
     for i in range(len(odds)-1):
         pairs.append([])
@@ -159,16 +158,24 @@ def gen_pairs(odds):
     return pairs
 
 
-#Final Compiled Function
 def Chinese_Postman(graph):
+    # Trouver les noeuds avec des degrés impairs
     odds = get_odd(graph)
+    
+    # Si aucun noeud avec un degré impair, alors le graphe est déjà un chemin eulerien
     if(len(odds)==0):
         return sum_edges(graph)
+    
+    # Générer toutes les paires possibles de noeuds impairs
     pairs = gen_pairs(odds)
+    
+    # Nombre de paires de noeuds impairs pour les apparier
     l = (len(pairs)+1)//2
     
+    # Liste pour stocker les paires de noeuds impairs appariées
     pairings_sum = []
     
+    # Fonction récursive pour appairer les noeuds impairs
     def get_pairs(pairs, done = [], final = []):
         
         if(pairs[0][0][0] not in done):
@@ -192,18 +199,26 @@ def Chinese_Postman(graph):
         else:
             get_pairs(pairs[1:], done, final)
             
+    # Appairer les noeuds impairs
     get_pairs(pairs)
-    min_sums = []
     
+    # Calculer les distances les plus courtes pour chaque paire de noeuds impairs appariés
+    min_sums = []
     for i in pairings_sum:
         s = 0
         for j in range(len(i)):
             s += dijktra(graph, i[j][0], i[j][1])
         min_sums.append(s)
     
+    # Calculer la distance ajoutée pour traverser chaque paire de noeuds impairs appariés
     added_dis = min(min_sums)
+    
+    # Calculer la distance totale pour parcourir tous les chemins en utilisant l'algorithme chinois du postier
     chinese_dis = added_dis + sum_edges(graph)
-    return chinese_dis    
+    
+    # Retourner la distance totale
+    return chinese_dis
+  
 
 def fleury(graph):
     # Copie de graph pour éviter de le modifier
@@ -241,28 +256,34 @@ def fleury(graph):
 
 
 def find_bridges(graph):
-    bridges = []
-    visited = set()
-    parent = [-1] * len(graph)
-    low = [float('inf')] * len(graph)
-    disc = [float('inf')] * len(graph)
-    
-    def dfs(v):
-        visited.add(v)
-        disc[v] = dfs.time
+    bridges = []  # stockera toutes les arêtes ponts trouvées
+    visited = set()  # stockera tous les sommets visités lors de la recherche
+    parent = [-1] * len(graph)  # stockera le parent de chaque sommet dans l'arborescence de la recherche
+    low = [float('inf')] * len(graph)  # stockera le temps de découverte le plus bas accessible depuis chaque sommet
+    disc = [float('inf')] * len(graph)  # stockera le temps de découverte de chaque sommet
+
+    def dfs(v): 
+        visited.add(v) # ajoute v aux noeuds visités
+        disc[v] = dfs.time # initialise les temps de découverte et de bas niveau pour le noeud v
         low[v] = dfs.time
-        dfs.time += 1
+        dfs.time += 1 # incrémente le temps de découverte
         
+        # explore les voisins du noeud v
         for i in range(len(graph)):
             if graph[v][i] != 0:
+                # si le voisin n'a pas encore été visité, marque-le comme un enfant de v et explore-le récursivement
                 if i not in visited:
                     parent[i] = v
                     dfs(i)
+                    # met à jour le bas niveau de v avec le plus petit bas niveau de ses enfants
                     low[v] = min(low[v], low[i])
+                    # si le bas niveau de l'enfant i est supérieur au temps de découverte de v, c'est une bridge
                     if low[i] > disc[v]:
                         bridges.append((v, i))
+                # si le voisin i est déjà visité et n'est pas un parent direct de v, met à jour le bas niveau de v
                 elif i != parent[v]:
                     low[v] = min(low[v], disc[i])
+
                     
     dfs.time = 0
     
