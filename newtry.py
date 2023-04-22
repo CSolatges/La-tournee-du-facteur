@@ -228,30 +228,32 @@ def fleury(graph):
     current_vertex = 0
     # On initialise le chemin
     path = [current_vertex]
+    
     while sum_edges(graph_copy) != 0:
         # On recherche une arête qui n'est pas une arête de pont
-        bridges = find_bridges(graph_copy)
-        non_bridges = [(i,j) for i in range(len(graph_copy)) for j in range(len(graph_copy)) if graph_copy[i][j]!=0 and (i,j) not in bridges]
+        bridges = find_bridges(graph_copy) # on récupère les ponts
+        non_bridges = [(i,j) for i in range(len(graph_copy)) for j in range(len(graph_copy)) if graph_copy[i][j]!=0 and (i,j) not in bridges] # on récupère les arêtes qui ne sont pas des ponts
         if len(non_bridges) == 0:
             break
         next_vertex = None
-        for edge in non_bridges:
-            if edge[0] == current_vertex or edge[1] == current_vertex:
-                next_vertex = edge[0] + edge[1] - current_vertex
-                graph_copy[edge[0]][edge[1]] = 0
+        for edge in non_bridges: # on parcourt les arêtes non ponts
+            if edge[0] == current_vertex or edge[1] == current_vertex: # on cherche une arête qui est connectée à l'actuel sommet
+                next_vertex = edge[0] + edge[1] - current_vertex # on récupère le prochain sommet à visiter
+                graph_copy[edge[0]][edge[1]] = 0 # on enlève l'arête du graphe
                 graph_copy[edge[1]][edge[0]] = 0
                 break
         if next_vertex is None:
             # Cas où tous les voisins sont des ponts
-            next_vertex = path[-2]
-            graph_copy[current_vertex][next_vertex] = 0
+            next_vertex = path[-2] # on revient en arrière
+            graph_copy[current_vertex][next_vertex] = 0 # on enlève l'arête du graphe
             graph_copy[next_vertex][current_vertex] = 0
-            path = path[:-1]
+            path = path[:-1] # on enlève le dernier sommet visité de la liste des sommets visités
         else:
-            path.append(next_vertex)
+            path.append(next_vertex) # on ajoute le prochain sommet visité à la liste des sommets visités
         current_vertex = next_vertex
     
     return path
+
 
 
 
@@ -331,17 +333,18 @@ def make_eulerian(adj_matrix):
 
 
 
+#appel des fonctions pour afficher le chemins 
 
-if nx.is_eulerian(G):
+if nx.is_eulerian(G):  #affichage du chemin si le graphe est eulérien
     eulerian_path = fleury(nx.to_numpy_array(G))
     print('Chemin eulérien :', eulerian_path)
 else:
-    G = make_eulerian(graph)
+    G = make_eulerian(graph) #si il ne l'est pas 
     non_eulerian_path = fleury(nx.to_numpy_array(G))
     print('Chemin non eulérien :', non_eulerian_path)
    
 
 
-
+#affichage du poids
     
 print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph))
