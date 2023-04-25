@@ -4,55 +4,47 @@ import numpy as np
 from collections import defaultdict
 
 
+
 """
-graph = [
-[0, 1, 1, 0, 0],
- [1, 0, 1, 1, 0],
- [1, 1, 0, 1, 1],
- [0, 1, 1, 0, 1],
- [0, 0, 1, 1, 0]]
-
-
 
 graph = [[0,0,1,0],
-          [0,0,1,1],
+          [0,0,1,1], #manque le retour à 0
           [1,1,0,1],
           [0,1,1,0]]
 
 
 
 
-graph = [[0,1,0,0,0],  #graphe non eulerien mais qu'on peut transformer en eulérien
+graph = [[0,1,0,0,0], 
           [1,0,0,0,1],
-          [0,0,0,1,1],
+          [0,0,0,1,1], #ok
           [0,0,1,0,1],
           [0,1,1,1,0]]
 
 
 
 graph = [[0,1,1,1,1],
-          [1,0,1,0,0],   #graĥe eulérien
+          [1,0,1,0,0],   #ok
           [1,1,0,0,0],
           [1,0,0,0,1],
           [1,0,0,1,0]]
 
 
 
-graph =                 [[0, 4, 0, 0, 0, 0, 0, 8, 0], 
-                       [4, 0, 8, 0, 0, 0, 0, 11, 0], 
-                        [0, 8, 0, 7, 0, 4, 0, 0, 2],   #graphe non eulerien mais qu'on peut transformer en eulérien
-                        [0, 0, 7, 0, 9, 14, 0, 0, 0], 
-                        [0, 0, 0, 9, 0, 10, 0, 0, 0], 
-                        [0, 0, 4, 0, 10, 0, 2, 0, 0], 
-                        [0, 0, 0, 14, 0, 2, 0, 1, 6], 
-                        [8, 11, 0, 0, 0, 0, 1, 0, 7], 
-                        [0, 0, 2, 0, 0, 0, 6, 7, 0] 
-                    ]; 
+graph = [[0, 4, 0, 0, 0, 0, 0, 8, 0], 
+         [4, 0, 8, 0, 0, 0, 0, 11, 0], 
+         [0, 8, 0, 7, 0, 4, 0, 0, 2], 
+         [0, 0, 7, 0, 9, 14, 0, 0, 0], 
+         [0, 0, 0, 9, 0, 10, 0, 0, 0], 
+         [0, 0, 4, 14, 10, 0, 2, 0, 0], 
+         [0, 0, 0, 0, 0, 2, 0, 1, 6], 
+         [8, 11, 0, 0, 0, 0, 1, 0, 7], 
+         [0, 0, 2, 0, 0, 0, 6, 7, 0]]
 
 
 graph =                [[0, 3, 1, 0, 5, 0], 
                         [3, 0, 0, 1, 0, 6], 
-                        [1, 0, 0, 0, 2, 0],  #graphe non eulerien mais qu'on peut transformer en eulérien
+                        [1, 0, 0, 0, 2, 0],  #ok
                         [0, 1, 0, 0, 0, 1], 
                         [5, 0, 2, 0, 0, 4], 
                         [0, 6, 0, 1, 4, 0], 
@@ -62,7 +54,7 @@ graph =                [[0, 3, 1, 0, 5, 0],
 """
 
 
-graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eulérien
+graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eulérien ça marche po
                 [1,0,1,0,0,0,0,1,0],
                 [0,1,0,1,0,0,1,0,0],
                 [0,0,1,0,1,1,0,0,0],
@@ -73,12 +65,12 @@ graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eul�
                 [0,0,0,0,0,0,1,1,0]]
 
             
+
+
 G = nx.from_numpy_array(np.array(graph))
-pos = nx.spring_layout(G)
-nx.draw(G, pos, with_labels=True)
-labels = nx.get_edge_attributes(G, 'weight')
-nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-plt.show()
+
+nx.draw(G, with_labels=True)
+plt.show() #permet d'afficher le graphe
 
 def somme_aretes(graph): #caclule la somme totale des arêtes
     somme = 0
@@ -143,8 +135,8 @@ def get_odd(graph):
                     degrees[i]+=1   # Pour chaque sommet, parcours de tous les voisins pour calculer son degré
 
     odds = [i for i in range(len(degrees)) if degrees[i]%2!=0]  # Récupération des sommets de degré impair
-    print('Les sommets de degré impairs de ce graphe sont : ', odds)
-    print('\n')
+    #print('Les sommets de degré impairs de ce graphe sont : ', odds)
+    #print('\n')
     return odds  # Retourne la liste des sommets de degré impair
 
 
@@ -160,8 +152,8 @@ def gen_pairs(odds):
         for j in range(i+1,len(odds)):
             pairs[i].append([odds[i],odds[j]])
         
-    print('Les paires possibles entre ces sommets sont :',pairs)
-    print('\n')
+    #print('Les paires possibles entre ces sommets sont :',pairs)
+    #print('\n')
     return pairs
 
 
@@ -332,13 +324,28 @@ def make_eulerian(adj_matrix):
         length = shortest_paths[(start, end)]
         G.add_edge(start, end, weight=length)
 
-    # vérifier si le graphe est maintenant eulerien
-    if not nx.is_eulerian(G):
-        print('\n')
-        print("Erreur dans la création du graphe eulérien")
-        print('\n')
 
     return G
+
+def trouver_chemin_minimal(graphe, graphe_eulerien):
+    # Trouver la liste des sommets de degré impair dans le graphe eulerien
+    sommets_impairs = [sommet for sommet in range(len(graphe_eulerien)) if sum(graphe_eulerien[sommet]) % 2 == 1]
+    
+    # Initialiser le chemin avec le premier sommet impair
+    chemin = [sommets_impairs[0]]
+    
+    # Parcourir chaque sommet impair et ajouter le chemin minimal pour atteindre le prochain sommet impair
+    for i in range(1, len(sommets_impairs)):
+        chemin_minimal = dijkstra(graphe_eulerien, sommets_impairs[i-1], sommets_impairs[i])
+        chemin += chemin_minimal[1:] # ajouter tous les sommets du chemin sauf le premier qui a déjà été visité
+    
+    # Retourner le chemin complet en supprimant les fausses arêtes ajoutées
+    chemin_complet = []
+    for i in range(len(chemin)-1):
+        chemin_complet += dijkstra(graphe, chemin[i], chemin[i+1])[1:] # ajouter tous les sommets du chemin sauf le premier qui a déjà été visité
+    chemin_complet.append(chemin[0]) # ajouter le point de départ à la fin
+    
+    return chemin_complet
 
 
 
@@ -346,12 +353,12 @@ def make_eulerian(adj_matrix):
 
 if nx.is_eulerian(G):  #affichage du chemin si le graphe est eulérien
     eulerian_path = fleury(nx.to_numpy_array(G))
-    print('Chemin eulérien :', eulerian_path)
+    print('Le plus court chemin que peut emprunter le facteur est :', eulerian_path)
     print('\n')
 else:
     G = make_eulerian(graph) #si il ne l'est pas 
     non_eulerian_path = fleury(nx.to_numpy_array(G))
-    print('Chemin non eulérien :', non_eulerian_path)
+    print('Le plus court chemin que peut emprunter le facteur est :', non_eulerian_path)
     print('\n')
    
 
@@ -360,3 +367,9 @@ else:
     
 print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph))
 print('\n')
+
+pos = nx.spring_layout(G)
+nx.draw(G, pos, with_labels=True)
+labels = nx.get_edge_attributes(G, 'weight')
+nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+plt.show()
