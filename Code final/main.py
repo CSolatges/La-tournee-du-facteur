@@ -7,8 +7,8 @@ from collections import defaultdict
 
 """
 
-graph = [[0,0,1,0],
-          [0,0,1,1], #manque le retour à 0
+graph =  [[0,1,1,0],
+          [1,0,1,1], #manque le retour à 0
           [1,1,0,1],
           [0,1,1,0]]
 
@@ -22,14 +22,13 @@ graph = [[0,1,0,0,0],
           [0,1,1,1,0]]
 
 
-"""
 graph = [[0,1,1,1,1],
           [1,0,1,0,0],   #ok
           [1,1,0,0,0],
           [1,0,0,0,1],
           [1,0,0,1,0]]
 
-"""
+
 
 graph = [[0, 4, 0, 0, 0, 0, 0, 8, 0], 
          [4, 0, 8, 0, 0, 0, 0, 11, 0], 
@@ -51,7 +50,7 @@ graph =                [[0, 3, 1, 0, 5, 0],
                          
                     ]; 
 
-
+"""
 
 graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eulérien ça marche po
                 [1,0,1,0,0,0,0,1,0],
@@ -63,13 +62,12 @@ graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eul�
                 [0,1,0,0,0,0,1,0,1],
                 [0,0,0,0,0,0,1,1,0]]
 
-"""            
+         
 
 
 G = nx.from_numpy_array(np.array(graph))
-
-nx.draw(G, with_labels=True)
-plt.show() #permet d'afficher le graphe
+#nx.draw(G, with_labels=True)
+#plt.show() #permet d'afficher le graphe
 
 def somme_aretes(graph): #caclule la somme totale des arêtes
     somme = 0
@@ -127,6 +125,9 @@ def dijkstra(graph, source, dest):
 
 
 def get_odd(graph):
+    """
+    permet d'obtenir la liste des sommets de degré impair
+    """
     degrees = [0 for i in range(len(graph))]  # Création d'une liste de degrés pour chaque sommet, initialisée à 0
     for i in range(len(graph)):
         for j in range(len(graph)):
@@ -157,6 +158,9 @@ def gen_pairs(odds):
 
 
 def Chinese_Postman(graph):
+    """
+    retourne la distance totale parcourue par le facteur mais n'affiche pas le chemin
+    """
     # Trouver les noeuds avec des degrés impairs
     odds = get_odd(graph)
     
@@ -218,7 +222,11 @@ def Chinese_Postman(graph):
     return chinese_dis
   
 
-def fleury(graph): #permet de trouver un chemin eluérien
+def fleury(graph): 
+    """
+    Permet de trouver un chemin eluérien mais le graphe en entrée ne doit pas contenir de sommet de degré impair ou exactement deux sommets de degré impair 
+    """
+    
     # Copie de graph pour éviter de le modifier
     graph_copy = [row[:] for row in graph]
     
@@ -256,6 +264,11 @@ def fleury(graph): #permet de trouver un chemin eluérien
 
 
 def find_bridges(graph):
+    """
+    Cette fonction utilise l'algorithme de recherche en profondeur pour trouver toutes les arêtes ponts 
+    d'un graphe. Un pont est une arête dans un graphe qui, s'il est supprimé, 
+    sépare le graphe en deux ou plusieurs composantes connexes.
+    """
     bridges = []  # stockera toutes les arêtes ponts trouvées
     visited = set()  # stockera tous les sommets visités lors de la recherche
     parent = [-1] * len(graph)  # stockera le parent de chaque sommet dans l'arborescence de la recherche
@@ -325,40 +338,27 @@ def make_eulerian(adj_matrix):
 
 
     return G
-"""
-def trouver_chemin_minimal(graphe, graphe_eulerien):
-    # Trouver la liste des sommets de degré impair dans le graphe eulerien
-    sommets_impairs = [sommet for sommet in range(len(graphe_eulerien)) if sum(graphe_eulerien[sommet]) % 2 == 1]
-    
-    # Initialiser le chemin avec le premier sommet impair
-    chemin = [sommets_impairs[0]]
-    
-    # Parcourir chaque sommet impair et ajouter le chemin minimal pour atteindre le prochain sommet impair
-    for i in range(1, len(sommets_impairs)):
-        chemin_minimal = dijkstra(graphe_eulerien, sommets_impairs[i-1], sommets_impairs[i])
-        chemin += chemin_minimal[1:] # ajouter tous les sommets du chemin sauf le premier qui a déjà été visité
-    
-    # Retourner le chemin complet en supprimant les fausses arêtes ajoutées
-    chemin_complet = []
-    for i in range(len(chemin)-1):
-        chemin_complet += dijkstra(graphe, chemin[i], chemin[i+1])[1:] # ajouter tous les sommets du chemin sauf le premier qui a déjà été visité
-    chemin_complet.append(chemin[0]) # ajouter le point de départ à la fin
-    
-    return chemin_complet
 
 
-"""
+
+
 #appel des fonctions pour afficher le chemins 
 
 if nx.is_eulerian(G):  #affichage du chemin si le graphe est eulérien
     eulerian_path = fleury(nx.to_numpy_array(G))
-    print('Le plus court chemin que peut emprunter le facteur est :', eulerian_path)
+    print('1) Le plus court chemin que peut emprunter le facteur est :', eulerian_path)
     print('\n')
+
+ 
 else:
     G = make_eulerian(graph) #si il ne l'est pas 
+    nx.draw(G, with_labels=True)
+    plt.show() #permet d'afficher le graphe modifié qui est maintenant eulérien
     non_eulerian_path = fleury(nx.to_numpy_array(G))
-    print('Le plus court chemin que peut emprunter le facteur est :', non_eulerian_path)
+    print('2) Le plus court chemin que peut emprunter le facteur est :', non_eulerian_path) #à modifier parce que du coup ça affiche le chemin dans le graphe eulérien modifié
     print('\n')
+  
+
 
 
 
@@ -369,9 +369,10 @@ print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chine
 print('\n')
 
 #permet d'afficher le graphe avec les poids sur les arêres
-
+G = nx.from_numpy_array(np.array(graph))
 pos = nx.spring_layout(G)
 nx.draw(G, pos, with_labels=True)
 labels = nx.get_edge_attributes(G, 'weight')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 plt.show()
+
