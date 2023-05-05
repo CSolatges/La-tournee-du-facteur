@@ -22,14 +22,14 @@ graph = [[0,1,0,0,0],
           [0,1,1,1,0]]
 
 
-
+"""
 graph = [[0,1,1,1,1],
           [1,0,1,0,0],   #ok
           [1,1,0,0,0],
           [1,0,0,0,1],
           [1,0,0,1,0]]
 
-
+"""
 
 graph = [[0, 4, 0, 0, 0, 0, 0, 8, 0], 
          [4, 0, 8, 0, 0, 0, 0, 11, 0], 
@@ -51,7 +51,6 @@ graph =                [[0, 3, 1, 0, 5, 0],
                          
                     ]; 
 
-"""
 
 
 graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eulérien ça marche po
@@ -64,7 +63,7 @@ graph =     [[0,1,0,0,0,0,0,0,0],   #graphinsa impossible de transformer en eul�
                 [0,1,0,0,0,0,1,0,1],
                 [0,0,0,0,0,0,1,1,0]]
 
-            
+"""            
 
 
 G = nx.from_numpy_array(np.array(graph))
@@ -219,7 +218,7 @@ def Chinese_Postman(graph):
     return chinese_dis
   
 
-def fleury(graph):
+def fleury(graph): #permet de trouver un chemin eluérien
     # Copie de graph pour éviter de le modifier
     graph_copy = [row[:] for row in graph]
     
@@ -326,7 +325,7 @@ def make_eulerian(adj_matrix):
 
 
     return G
-
+"""
 def trouver_chemin_minimal(graphe, graphe_eulerien):
     # Trouver la liste des sommets de degré impair dans le graphe eulerien
     sommets_impairs = [sommet for sommet in range(len(graphe_eulerien)) if sum(graphe_eulerien[sommet]) % 2 == 1]
@@ -348,7 +347,7 @@ def trouver_chemin_minimal(graphe, graphe_eulerien):
     return chemin_complet
 
 
-
+"""
 #appel des fonctions pour afficher le chemins 
 
 if nx.is_eulerian(G):  #affichage du chemin si le graphe est eulérien
@@ -360,13 +359,16 @@ else:
     non_eulerian_path = fleury(nx.to_numpy_array(G))
     print('Le plus court chemin que peut emprunter le facteur est :', non_eulerian_path)
     print('\n')
-   
+
+
 
 
 #affichage du poids
     
 print('Le plus court chemin que doit emprunter le facteur a un poids de :',Chinese_Postman(graph))
 print('\n')
+
+#permet d'afficher le graphe avec les poids sur les arêres
 
 pos = nx.spring_layout(G)
 nx.draw(G, pos, with_labels=True)
