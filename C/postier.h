@@ -31,4 +31,3 @@ unsigned int Kilometres[N][N] = {
     {INFINI, INFINI , INFINI, INFINI , INFINI , INFINI , 1 , 1 , INFINI}};
  
 // Charge maximale
-
