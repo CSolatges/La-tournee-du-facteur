@@ -69,7 +69,7 @@ graph = [[1, 1, 1, 1, 1, 1],
          [1, 1, 1, 1, 1, 1],
          [1, 1, 1, 1, 1, 1]]
 
-"""
+
 
 # Exemple d'utilisation
 graph = [
@@ -80,6 +80,13 @@ graph = [
     [5, 0, 2, 0, 0, 4],
     [0, 6, 0, 1, 4, 0],
 ]
+"""
+graph = [[0,1,0,0,0], 
+          [1,0,0,0,1],
+          [0,0,0,1,1], 
+          [0,0,1,0,1],
+          [0,1,1,1,0]]
+
 
 G = nx.from_numpy_array(np.array(graph))
 pos = nx.spring_layout(G)
@@ -89,7 +96,7 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 plt.show()
 
 new_graph = add_shortest_paths(graph)
-print(new_graph)
+print("le graphe complet est ", new_graph)
 
 
 #permet d'afficher le graphe avec les poids sur les arêres
@@ -98,7 +105,7 @@ pos = nx.spring_layout(G)
 nx.draw(G, pos, with_labels=True)
 labels = nx.get_edge_attributes(G, 'weight')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-plt.show()
+#plt.show()
 
 """
 graphe obtenu : 
@@ -154,45 +161,91 @@ def find_minimum_matching(graph):
 
 
 minimum_matching = find_minimum_matching(new_graph)
-print(minimum_matching)
+print("les arêtes de couplage minimal sont :", minimum_matching)
 
 
-
-def double_edges(graph, pairs):
-    doubled_graph = [row[:] for row in graph]  # Copie du graphe pour éviter de le modifier directement
-    for pair in pairs:
-        source, dest = pair
-        if graph[source][dest] != 0:  # Vérifie si l'arête existe
-            doubled_graph[source][dest] = 2  # Double la valeur de l'arête d'origine
-            doubled_graph[dest][source] = 2  # Crée une nouvelle arête dans l'autre sens avec une valeur de 2
-    return doubled_graph
-
-import networkx as nx
-
-def find_eulerian_path(graph, pairs):
-    doubled_graph = double_edges(graph, pairs)
-    G = nx.from_numpy_array(np.array(doubled_graph))  # Conversion en un graphe NetworkX
-
-    if not nx.is_eulerian(G):
-        raise ValueError("Le graphe n'est pas eulerien.")
-
-    eulerian_path = list(nx.eulerian_circuit(G))
-    return eulerian_path
-
-graphE = [
-    [0, 1, 1, 0, 0, 0],
-    [1, 0, 1, 1, 1, 0],
-    [1, 1, 0, 0, 1, 1],
-    [0, 1, 0, 0, 1, 1],
-    [0, 1, 1, 1, 0, 1],
-    [0, 0, 1, 1, 1, 0]
-]
+def create_new_graph(graph, minimum_matching):
+    num_vertices = len(graph)
+    new_graph = nx.from_numpy_array(np.array(graph))  # Conversion de la matrice d'adjacence en graphe NetworkX
+    for edge in minimum_matching:
+        u, v = edge
+        new_graph.add_edge(u, v)  # Ajout des arêtes du couplage minimal
+    adj_matrix = nx.to_numpy_array(new_graph)  # Conversion en matrice d'adjacence
+    return adj_matrix
 
 
-pairs =  [(0, 3), (1, 4), (2, 5)]
+minimum_matching = find_minimum_matching(new_graph)
+adj_matrix = create_new_graph(graph, minimum_matching)
+
+print("nouveau graphe obtenu à partir du graphe initial et du couplage min :",adj_matrix)
 
 
 
 
-eulerian_path = find_eulerian_path(graph, pairs)
+def get_odd(graph):
+    degrees = [0 for i in range(len(graph))]  # Création d'une liste de degrés pour chaque sommet, initialisée à 0
+    for i in range(len(graph)):
+        for j in range(len(graph)):
+                if(graph[i][j]!=0):
+                    degrees[i]+=1   # Pour chaque sommet, parcours de tous les voisins pour calculer son degré
+
+    odds = [i for i in range(len(degrees)) if degrees[i]%2!=0]  # Récupération des sommets de degré impair
+    return odds  # Retourne la liste des sommets de degré impair
+
+
+
+
+odds=get_odd(adj_matrix)
+print("les sommets de degré impairs sont :", odds)
+
+
+
+def connect_odd_vertices(graph, odd_vertices):
+
+    new_graph = nx.Graph(graph)  # Créez une copie du graphe initial
+
+    for u in odd_vertices:
+        shortest_paths = nx.single_source_dijkstra_path(graph, u)  # Calculez les chemins les plus courts depuis le sommet u
+
+        for v in odd_vertices:
+            if u != v and v in shortest_paths:
+                # Ajoutez l'arête de poids minimal entre les sommets de degré impair
+                min_weight_edge = None
+                min_weight = float('inf')
+
+                for i in range(len(shortest_paths[v]) - 1):
+                    src = shortest_paths[v][i]
+                    dest = shortest_paths[v][i+1]
+                    weight = graph[src][dest]['weight']
+                    
+                    if weight < min_weight:
+                        min_weight = weight
+                        min_weight_edge = (src, dest)
+
+                if min_weight_edge:
+                    new_graph.add_edge(*min_weight_edge, weight=min_weight)
+
+    return new_graph
+
+# Convertir la matrice d'adjacence en graphe
+graph = nx.from_numpy_array(adj_matrix)
+
+# Utiliser le graphe pour connecter les sommets de degré impair
+eulerian_graph = connect_odd_vertices(graph, odds)
+
+nx.draw(eulerian_graph, with_labels=True)
+plt.show()
+
+
+
+#
+
+# Vérification du résultat
+print("le graphe eulerien est :", eulerian_graph)
+
+# Obtenez le chemin eulérien
+eulerian_path = list(nx.eulerian_circuit(eulerian_graph))
+
+# Affichez le chemin eulérien
 print(eulerian_path)
+
