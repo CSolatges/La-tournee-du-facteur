@@ -179,8 +179,59 @@ adj_matrix = create_new_graph(graph, minimum_matching)
 
 print("nouveau graphe obtenu à partir du graphe initial et du couplage min :",adj_matrix)
 
+#il faut doubler les chemins obtenus par le couplage minimal dans le graphe de départ
+
+def double_edges(graph, minimum_matching):
+    num_vertices = len(graph)
+    new_graph = np.array(graph)  # Création d'une copie du graphe initial
+
+    for edge in minimum_matching:
+        u, v = edge
+        visited = set([u])  # Sommets visités lors de la recherche du chemin
+        stack = [u]  # Pile pour effectuer la recherche en profondeur
+        
+        while stack:
+            current = stack[-1]
+            found_path = False
+            
+            for neighbor in range(num_vertices):
+                if graph[current][neighbor] > 0 and neighbor not in visited:
+                    visited.add(neighbor)
+                    stack.append(neighbor)
+                    
+                    if neighbor == v:  # Chemin trouvé
+                        found_path = True
+                        break
+            
+            if found_path:
+                break
+            
+            stack.pop()
+        
+        for i in range(len(stack) - 1):
+            src = stack[i]
+            dest = stack[i + 1]
+            new_graph[src][dest] += 1  # Incrémentation de l'arête dans le nouveau graphe
+            new_graph[dest][src] += 1  # Incrémentation de l'arête dans le nouveau graphe
+    
+    return new_graph
 
 
+graph_double = double_edges(graph, minimum_matching)
+print("voici le graphe avec les aretes doublées :", graph_double)
+
+#ça marche pas donc à modifier 
+
+#ensuite il faut trouver le chemin eulerien dans le graphe obtenus en doublant les arêtes et c'est terminé
+#il reste juste ça à faire mc si jamais tu y arrives 
+
+
+
+
+
+
+
+"""
 
 def get_odd(graph):
     degrees = [0 for i in range(len(graph))]  # Création d'une liste de degrés pour chaque sommet, initialisée à 0
@@ -249,3 +300,4 @@ eulerian_path = list(nx.eulerian_circuit(eulerian_graph))
 # Affichez le chemin eulérien
 print(eulerian_path)
 
+"""
