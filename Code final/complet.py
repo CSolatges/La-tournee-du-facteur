@@ -1,11 +1,14 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+import heapq
+from collections import defaultdict
+
 
 def dijkstra(graph, source, dest):
-    """
-   Fonction qui implémente l'algorithme de Dijkstra pour trouver le plus court chemin entre deux sommets dans un graphe pondéré.
-    """
+    
+   #Fonction qui implémente l'algorithme de Dijkstra pour trouver le plus court chemin entre deux sommets dans un graphe pondéré.
+    
     shortest = [0 for i in range(len(graph))]   # initialisation des poids des sommets à 0
     selected = [source]   # initialisation de la liste des sommets sélectionnés, avec le sommet de départ
     l = len(graph)   # longueur de la matrice graph
@@ -164,6 +167,68 @@ minimum_matching = find_minimum_matching(new_graph)
 print("les arêtes de couplage minimal sont :", minimum_matching)
 
 
+
+
+#il faut doubler les chemins obtenus par le couplage minimal dans le graphe de départ
+
+
+def double_shortest_paths(graph, pairs):
+    """
+    Fonction qui double toutes les arêtes du plus court chemin entre chaque paire de sommets donnée.
+    Utilise l'algorithme de Dijkstra pour calculer les plus courts chemins.
+    """
+
+    def dijkstra(graph, start):
+        """
+        Algorithme de Dijkstra pour trouver les plus courts chemins à partir d'un sommet de départ donné.
+        """
+        distances = defaultdict(lambda: float('inf'))
+        distances[start] = 0
+
+        pq = [(0, start)]
+
+        while pq:
+            dist, node = heapq.heappop(pq)
+
+            if dist > distances[node]:
+                continue
+
+            for neighbor, weight in enumerate(graph[node]):
+                if weight > 0:
+                    new_dist = dist + weight
+                    if new_dist < distances[neighbor]:
+                        distances[neighbor] = new_dist
+                        heapq.heappush(pq, (new_dist, neighbor))
+
+        return distances
+
+    doubled_graph = [row[:] for row in graph]  # Copie du graphe initial
+
+    for u, v in pairs:
+        distances = dijkstra(graph, u)  # Calcul des plus courts chemins à partir de u
+
+        # Récupère le plus court chemin entre u et v
+        path = [v]
+        while path[-1] != u:
+            prev = distances[path[-1]]
+            for neighbor, weight in enumerate(graph[path[-1]]):
+                if weight > 0 and distances[neighbor] + weight == prev:
+                    path.append(neighbor)
+                    break
+
+        # Double les arêtes du chemin
+        for i in range(len(path) - 1):
+            node1, node2 = path[i], path[i + 1]
+            doubled_graph[node1][node2] += 1
+            doubled_graph[node2][node1] += 1
+
+    return doubled_graph
+
+pairs = find_minimum_matching(new_graph)
+doubled_graph = double_shortest_paths(graph, pairs)
+print("Le graphe doublé est :", doubled_graph)
+
+
 def create_new_graph(graph, minimum_matching):
     num_vertices = len(graph)
     new_graph = nx.from_numpy_array(np.array(graph))  # Conversion de la matrice d'adjacence en graphe NetworkX
@@ -178,57 +243,92 @@ minimum_matching = find_minimum_matching(new_graph)
 adj_matrix = create_new_graph(graph, minimum_matching)
 
 print("nouveau graphe obtenu à partir du graphe initial et du couplage min :",adj_matrix)
-
-#il faut doubler les chemins obtenus par le couplage minimal dans le graphe de départ
-
-def double_edges(graph, minimum_matching):
-    num_vertices = len(graph)
-    new_graph = np.array(graph)  # Création d'une copie du graphe initial
-
-    for edge in minimum_matching:
-        u, v = edge
-        visited = set([u])  # Sommets visités lors de la recherche du chemin
-        stack = [u]  # Pile pour effectuer la recherche en profondeur
-        
-        while stack:
-            current = stack[-1]
-            found_path = False
-            
-            for neighbor in range(num_vertices):
-                if graph[current][neighbor] > 0 and neighbor not in visited:
-                    visited.add(neighbor)
-                    stack.append(neighbor)
-                    
-                    if neighbor == v:  # Chemin trouvé
-                        found_path = True
-                        break
-            
-            if found_path:
-                break
-            
-            stack.pop()
-        
-        for i in range(len(stack) - 1):
-            src = stack[i]
-            dest = stack[i + 1]
-            new_graph[src][dest] += 1  # Incrémentation de l'arête dans le nouveau graphe
-            new_graph[dest][src] += 1  # Incrémentation de l'arête dans le nouveau graphe
-    
-    return new_graph
-
-
-graph_double = double_edges(graph, minimum_matching)
-print("voici le graphe avec les aretes doublées :", graph_double)
-
 #ça marche pas donc à modifier 
 
 #ensuite il faut trouver le chemin eulerien dans le graphe obtenus en doublant les arêtes et c'est terminé
 #il reste juste ça à faire mc si jamais tu y arrives 
 
 
+def find_eulerian_path(graph):
+    """
+    Fonction qui trouve un chemin eulérien dans un graphe s'il en existe un.
+    """
+    num_vertices = len(graph)
+
+    # Vérifier si le graphe est eulérien
+    for v in range(num_vertices):
+        if sum(graph[v]) % 2 != 0:  # Si un sommet a un degré impair, le graphe n'est pas eulérien
+            return None
+
+    # Copie du graphe pour la suppression des arêtes visitées
+    graph_copy = [row[:] for row in graph]
+
+    # Fonction récursive pour trouver un chemin eulérien
+    def eulerian_path(v, path):
+        for u in range(num_vertices):
+            if graph_copy[v][u] > 0:  # Si l'arête n'a pas été visitée
+                graph_copy[v][u] -= 1  # Marquer l'arête comme visitée
+                graph_copy[u][v] -= 1
+                eulerian_path(u, path)  # Récursivement, trouver un chemin eulérien à partir du sommet suivant
+        path.append(v)  # Ajouter le sommet au chemin
+
+    # Trouver le sommet de départ pour le chemin eulérien
+    start_vertex = 0
+    for v in range(num_vertices):
+        if sum(graph[v]) > 0:  # Trouver le sommet avec une arête non visitée
+            start_vertex = v
+            break
+
+    # Initialiser le chemin eulérien
+    eulerian_path_list = []
+    eulerian_path(start_vertex, eulerian_path_list)
+
+    eulerian_path_list.reverse()  # Inverser le chemin pour obtenir l'ordre correct
+
+    return eulerian_path_list
+
+
+eulerian_path = find_eulerian_path(doubled_graph)
+
+if eulerian_path is None:
+    print("Le graphe n'a pas de chemin eulérien.")
+else:
+    print("Chemin eulérien :", eulerian_path)
+
+def get_odd(graph): #à utiliser avec le graphe doublé
+    degrees = [0 for i in range(len(graph))]  # Création d'une liste de degrés pour chaque sommet, initialisée à 0
+    for i in range(len(graph)):
+        for j in range(len(graph)):
+                if(graph[i][j]!=0):
+                    degrees[i]+=1   # Pour chaque sommet, parcours de tous les voisins pour calculer son degré
+
+    odds = [i for i in range(len(degrees)) if degrees[i]%2!=0]  # Récupération des sommets de degré impair
+    return odds  # Retourne la liste des sommets de degré impair
+
+odds = get_odd(doubled_graph)
+
+print('Les sommets de degré impairs de ce graphe sont : ', odds)
+
+def create_subgraph(graph, odd_vertices):
+    subgraph = [[] for _ in range(len(odd_vertices))]
+
+    for u in odd_vertices:
+        for v in graph[u]:
+            if v in odd_vertices:
+                subgraph[odd_vertices.index(u)].append(0)  # Attribution du poids nul à chaque arête
+
+    return subgraph
 
 
 
+subgraph = create_subgraph(doubled_graph, odds)
+print("Le sous-graphe formé par les sommets de degré impair est :", subgraph)
+
+nouveau_couplage = find_minimum_matching(subgraph)
+print("Le couplage minimal trouvé dans le graphe obtenu à partir des sommets impairs est :", nouveau_couplage)
+
+graphe_couple=create_new_graph(doubled_graph, nouveau_couplage)
+print("Le sous-graphe formé par le couplage et le graphe doublé est :", graphe_couple)
 
 
 """
