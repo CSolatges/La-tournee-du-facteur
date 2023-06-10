@@ -6,17 +6,28 @@ from collections import defaultdict
 from itertools import combinations
 import cplex
 from scipy.optimize import linear_sum_assignment
+from matplotlib.animation import FuncAnimation
 
 
+graph = [[0,1,1,0,0,1], 
+         [1,0,0,1,1,0],
+         [1,0,0,1,0,1],
+         [0,1,1,0,1,0],
+         [0,1,0,1,0,0],
+         [1,0,1,0,0,0]]
 
-graph = [
-    [0, 3, 1, 4, 3, 5],
+"""
+graph = [[0, 3, 1, 4, 3, 5], 
     [3, 0, 4, 1, 6, 2],
     [1, 4, 0, 5, 2, 6],
     [4, 1, 5, 0, 5, 1],
     [3, 6, 2, 5, 0, 4],
     [5, 2, 6, 1, 4, 0],
 ]
+"""
+
+
+
 def dijkstra(graph, source, dest):
     
    #Fonction qui implémente l'algorithme de Dijkstra pour trouver le plus court chemin entre deux sommets dans un graphe pondéré.
@@ -69,9 +80,13 @@ def add_shortest_paths(graph):
 
     for i in range(l):
         for j in range(i + 1, l):   # on parcourt uniquement la moitié supérieure de la matrice (évite la redondance)
-            weight = dijkstra(graph, i, j)   # calcul du poids du chemin minimal entre les sommets i et j
-            new_graph[i][j] = weight
-            new_graph[j][i] = weight   # on attribue le poids symétriquement pour un graphe non orienté
+            if graph[i][j]==0: #si on a pas déjà une arête
+                weight = dijkstra(graph, i, j)   # calcul du poids du chemin minimal entre les sommets i et j
+                new_graph[i][j] = weight
+                new_graph[j][i] = weight   # on attribue le poids symétriquement pour un graphe non orienté
+            else:
+                new_graph[i][j] = graph[i][j]
+                new_graph[j][i] = graph[j][i]
 
     return new_graph
 
@@ -87,15 +102,13 @@ graphe_complet = add_shortest_paths(graph)
 print("le graphe complet est ", graphe_complet)
 
 
-#permet d'afficher le graphe avec les poids sur les arêres
+#permet d'afficher le graphe complet avec les poids sur les arêres
 G = nx.from_numpy_array(np.array(graphe_complet))
 pos = nx.spring_layout(G)
 nx.draw(G, pos, with_labels=True)
 labels = nx.get_edge_attributes(G, 'weight')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-#plt.show()
-
-
+plt.show()
 
 
 def find_minimum_matching(graph):
@@ -138,6 +151,7 @@ minimum_matching = find_minimum_matching(graphe_complet)
 print("les arêtes de couplage minimal sont :", minimum_matching)
 
 def double_edges(graph, matching):
+    "fonction qui double les arêtes du plus court chemin entre chaque paire de sommet du couplage minimal du graphe "
     G = nx.Graph()
     for i in range(len(graph)):
         for j in range(len(graph[i])):
@@ -161,8 +175,6 @@ def double_edges(graph, matching):
 doubled_edges = double_edges(graph, minimum_matching)
 print("Liste d'arêtes avec les arêtes dans le graphe doublé :", doubled_edges)
 
-#après là jsp quoi faire
-
 
 # Création du graphe
 G = nx.Graph()
@@ -171,103 +183,11 @@ G.add_weighted_edges_from(doubled_edges)
 # Trouver les sommets de degré impair
 odd_vertices = [v for v, d in G.degree() if d % 2 == 1]
 
-# Relier les sommets de degré impair par des arêtes supplémentaires
-double_edges = []
-for i in range(len(odd_vertices) - 1):
-    for j in range(i + 1, len(odd_vertices)):
-        u = odd_vertices[i]
-        v = odd_vertices[j]
-        weight = 1  # Poids de l'arête supplémentaire (à définir selon vos besoins)
-        double_edges.append((u, v, weight))
-        double_edges.append((v, u, weight))
-
-# Ajouter les arêtes supplémentaires au graphe
-G.add_weighted_edges_from(double_edges)
-
-# Afficher toutes les arêtes du graphe
-print("Toutes les arêtes du graphe :")
-print(G.edges(data=True))
-
-
-# Création du graphe
-G = nx.Graph()
-G.add_weighted_edges_from(double_edges)
-
-# Trouver les sommets de degré impair
-odd_vertices = [v for v, d in G.degree() if d % 2 == 1]
-
-# Afficher les sommets de degré impair
-print("Sommet(s) de degré impair :")
-print(odd_vertices)
-
-
-
-"""
-def find_odd_degree_vertices(graph):
-    odd_degree_vertices = []
-    for node in graph.nodes:
-        if graph.degree(node) % 2 != 0:
-            odd_degree_vertices.append(node)
-    return odd_degree_vertices
-
-
-
-# Trouver les sommets de degré impair
-odd_degree_vertices = find_odd_degree_vertices(doubled_graph)
-
-print('Les sommets de degré impairs de ce graphe sont : ',odd_degree_vertices)
-
-
-def get_subgraph_with_odd_degrees(graph, vertices):
-    odd_degree_vertices = [v for v in vertices if graph.degree[v] % 2 != 0]
-    subgraph = graph.subgraph(odd_degree_vertices)
-
-    num_vertices = len(odd_degree_vertices)
-    adjacency_matrix = np.zeros((num_vertices, num_vertices))
-
-    for u, v in subgraph.edges():
-        weight = graph[u][v]['weight']
-        u_index = odd_degree_vertices.index(u)
-        v_index = odd_degree_vertices.index(v)
-        adjacency_matrix[u_index][v_index] = weight
-        adjacency_matrix[v_index][u_index] = weight
-
-    return adjacency_matrix
-
-subgraph_imp=get_subgraph_with_odd_degrees(doubled_graph, odd_degree_vertices)
-
-print("graphe obtenu avec les sommets de degré impairs du graphe doublé :",subgraph_imp)
-
-
-# Création du graphe initial
-G = nx.Graph()
-num_nodes = len(graph)
-G.add_nodes_from(range(num_nodes))
-for i in range(num_nodes):
-    for j in range(i + 1, num_nodes):
-        if graph[i][j] != 0:
-            G.add_edge(i, j, weight=graph[i][j])
-
-# Vérification si le graphe est fortement connexe
-if not nx.is_connected(G):
-    print("Le graphe n'est pas fortement connexe.")
-    exit()
-
-# Trouver les sommets de degré impair dans le graphe initial
-odd_degree_vertices = [node for node in G.nodes if G.degree(node) % 2 != 0]
-
-# Ajouter les arêtes manquantes pour rendre le graphe eulerien
-for u in odd_degree_vertices:
-    min_distance = float('inf')
-    closest_vertex = None
-    for v in odd_degree_vertices:
-        if u != v:
-            distance = nx.shortest_path_length(G, source=u, target=v, weight='weight')
-            if distance < min_distance:
-                min_distance = distance
-                closest_vertex = v
-    if closest_vertex is not None:
-        G.add_edge(u, closest_vertex)
+# Vérifier si le graphe est déjà eulérien
+if len(odd_vertices) == 0:
+    print("Le graphe est déjà eulérien.")
+else:
+    G = nx.eulerize(G)
 
 # Trouver un circuit eulerien dans le graphe
 eulerian_circuit = list(nx.eulerian_circuit(G))
@@ -275,6 +195,34 @@ eulerian_circuit = list(nx.eulerian_circuit(G))
 # Récupérer le chemin final en enlevant les doublons
 final_path = [node for node, _ in eulerian_circuit]
 
-print('Le chemin final pour le problème du postier chinois est :', final_path)
+# Ajouter une arête entre la fin et le début du chemin
+final_path.append(final_path[0])
 
-"""
+print('Le chemin final pour le problème du postier chinois sur ce graphe est :', final_path)
+
+# Création du graphe final
+G = nx.Graph()
+G.add_weighted_edges_from(doubled_edges)
+
+# Convertir le chemin final en liste de tuples
+path_edges = [(final_path[i], final_path[i+1]) for i in range(len(final_path)-1)]
+
+# Création d'une figure
+fig, ax = plt.subplots()
+
+# Fonction d'animation appelée à chaque image de l'animation
+def animate(i):
+    ax.clear()
+    nx.draw(G, pos, with_labels=True)
+
+    # Affichage du chemin emprunté par le facteur jusqu'à l'étape i
+    nx.draw_networkx_edges(G, pos, edgelist=path_edges[:i+1], edge_color='r', width=2.0)
+
+    # Temporisation pour afficher progressivement le chemin
+    plt.pause(0.5)
+
+# Appel de l'animation
+ani = FuncAnimation(fig, animate, frames=len(path_edges), interval=1000, repeat=False)
+
+# Affichage de l'animation
+plt.show()
